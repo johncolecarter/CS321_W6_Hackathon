@@ -9,72 +9,73 @@ namespace QuizApp.Infrastructure.Data
 {
     public class QuestionRepository : IQuestionRepository
     {
-        // TODO: inherit and implement the IQuestionRepository interface
 
         private readonly AppDbContext _appDbContext;
 
         public QuestionRepository(AppDbContext appDbContext) 
         {
-            // TODO: inject and store AppDbContext
             _appDbContext = appDbContext;
         }
 
         public Question Get(int id)
         {
-            throw new NotImplementedException();
+            return _appDbContext.Questions
+                .Include(q => q.Answers)
+                .SingleOrDefault(q => q.Id == id);
         }
 
         public IEnumerable<Question> GetAll()
         {
-            throw new NotImplementedException();
+            return _appDbContext.Questions
+                .Include(q => q.Answers)
+                .ToList();
         }
 
         public Question Add(Question newQuestion)
         {
-            throw new NotImplementedException();
+            _appDbContext.Questions.Add(newQuestion);
+            _appDbContext.SaveChanges();
+
+            return newQuestion;
         }
 
         public Question Update(Question updatedQuestion)
         {
-            throw new NotImplementedException();
+            //retrieve the existing question
+                var existingItem = this.Get(updatedQuestion.Id);
+            if (existingItem == null) return null;
+
+            // copy updated property values into the existing question
+            _appDbContext.Entry(existingItem)
+               .CurrentValues
+               .SetValues(updatedQuestion);
+
+            // loop thru all of the answers in the updated question
+            foreach (var updatedAnswer in updatedQuestion.Answers)
+            {
+                // find the existing answer that corresponds to the updated answer
+                var existingAnswer = existingItem.Answers
+                .Where(a => a.Id == updatedAnswer.Id)
+                .SingleOrDefault();
+                // update existing answer from updated answer
+                _appDbContext.Entry(existingAnswer)
+                    .CurrentValues
+                    .SetValues(updatedAnswer);
+            }
+
+            // save all the changes
+            _appDbContext.Questions.Update(existingItem);
+            _appDbContext.SaveChanges();
+            return existingItem;
         }
 
         public void Remove(Question question)
         {
-            throw new NotImplementedException();
+            var quest = _appDbContext.Questions.FirstOrDefault(q => q.Id == question.Id);
+
+            _appDbContext.Questions.Remove(quest);
+
+            _appDbContext.SaveChanges();
         }
-
-        // TODO: The Update() method needs some special logic that you have not seen before.
-        // It will update the Question AND also update all of the related Answers. Here is
-        // the implementation for Update:
-        //public Question Update(Question updatedItem)
-        //{
-        //    // retrieve the existing question
-        //    var existingItem = this.Get(updatedItem.Id);
-        //    if (existingItem == null) return null;
-
-        //    // copy updated property values into the existing question
-        //    _dbContext.Entry(existingItem)
-        //       .CurrentValues
-        //       .SetValues(updatedItem);
-
-        //    // loop thru all of the answers in the updated question
-        //    foreach (var updatedAnswer in updatedItem.Answers)
-        //    {
-        //        // find the existing answer that corresponds to the updated answer
-        //        var existingAnswer = existingItem.Answers
-        //        .Where(a => a.Id == updatedAnswer.Id)
-        //        .SingleOrDefault();
-        //        // update existing answer from updated answer
-        //        _dbContext.Entry(existingAnswer)
-        //            .CurrentValues
-        //            .SetValues(updatedAnswer);
-        //    }
-
-        //    // save all the changes
-        //    _dbContext.Questions.Update(existingItem);
-        //    _dbContext.SaveChanges();
-        //    return existingItem;
-        //}
     }
 }
