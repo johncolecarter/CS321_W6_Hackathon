@@ -21,18 +21,18 @@ namespace QuizApp.Infrastructure.Data
 
         public Quiz Add(Quiz quiz)
         {
-            _dbContext.Quizzes.Add(entity);
+            _dbContext.Quizzes.Add(quiz);
             _dbContext.SaveChanges();
-            return entity;
+            return quiz;
         }
 
         public Quiz Get(int id)
         {
             return _dbContext.Quizzes
                 .Include(qq => qq.QuizQuestions)
-                .ThenInclude(a => a.Answers)
-                .ThenInclude(q => q.Questions)
-                .ToList();
+                .ThenInclude(a => a.Question)
+                .ThenInclude(q => q.Answers)
+                .FirstOrDefault();
 
         }
 
@@ -40,8 +40,9 @@ namespace QuizApp.Infrastructure.Data
         public IEnumerable<Quiz> GetAll()
         {
             return _dbContext.Quizzes
-                 .Include(b => b.Questions)
-                 .Include(b => b.Answers)
+                 .Include(a => a.QuizQuestions)
+                 .ThenInclude(a => a.Question)
+                 .ThenInclude(q => q.Answers)
                  .ToList();
         }
 
