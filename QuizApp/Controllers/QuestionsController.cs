@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuizApp.ApiModels;
+using QuizApp.Core.Models;
 using QuizApp.Core.Services;
 
 namespace QuizApp.Controllers
@@ -25,7 +26,6 @@ namespace QuizApp.Controllers
         [HttpGet()]
         public IActionResult GetAll()
         {
-            // return all questions
             try
             {
                 return Ok(_questionService.GetAll().ToApiModels());
@@ -42,8 +42,6 @@ namespace QuizApp.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            // TODO: replace the following code with a complete implementation
-            // that will return a single question based on id
             try
             {
                 var quiz = _questionService.Get(id);
@@ -60,22 +58,25 @@ namespace QuizApp.Controllers
 
         }
 
-        // TODO: only authenticated users can call this action
         [HttpPost]
-        public IActionResult Add()
+        public IActionResult Add(Question newQuestion)
         {
-            // TODO: replace the following code with a complete implementation
-            // that will add a new question 
-            ModelState.AddModelError("AddQuestion", "Not Implemented!");
-            return NotFound(ModelState);
+            try
+            {
+                var question = _questionService.Add(newQuestion);
+
+                return Ok(question.ToApiModel());
+            }catch
+            {
+                ModelState.AddModelError("AddQuestion", "Not Implemented!");
+                return NotFound(ModelState);
+            }
+            
         }
 
-        // TODO: only authenticated users can call this action
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] QuestionModel questionModel)
         {
-            // TODO: replace the following code with a complete implementation
-            // that will update a question
             try
             {
                 var quiz = _questionService.Update(questionModel.ToDomainModel());
@@ -92,12 +93,9 @@ namespace QuizApp.Controllers
 
         }
 
-        // TODO: only authenticated users can call this action
         [HttpDelete("{id}")]
         public IActionResult Remove(int id)
         {
-            // TODO: replace the following code with a complete implementation
-            // that will delete a question
             try
             {
                 _questionService.Remove(id);
