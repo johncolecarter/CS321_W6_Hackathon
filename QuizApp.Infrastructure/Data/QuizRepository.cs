@@ -7,15 +7,19 @@ using QuizApp.Core.Services;
 
 namespace QuizApp.Infrastructure.Data
 {
-    public class QuizRepository  : IQuizRepository
+    public class QuizRepository : IQuizRepository
+
     {
         private readonly AppDbContext _dbContext;
+        // TODO: inherit and implement the IQuizRepository interface
+
         public QuizRepository(AppDbContext dbContext)
         {
+            // TODO: inject and store AppDbContext
             _dbContext = dbContext;
         }
 
-        public Quiz Add(Quiz entity)
+        public Quiz Add(Quiz quiz)
         {
             _dbContext.Quizzes.Add(entity);
             _dbContext.SaveChanges();
@@ -29,21 +33,43 @@ namespace QuizApp.Infrastructure.Data
                 .ThenInclude(a => a.Answers)
                 .ThenInclude(q => q.Questions)
                 .ToList();
+
         }
+
 
         public IEnumerable<Quiz> GetAll()
         {
-            throw new NotImplementedException();
+            return _dbContext.Quizzes
+                 .Include(b => b.Questions)
+                 .Include(b => b.Answers)
+                 .ToList();
         }
 
-        public void Remove(Quiz entity)
+        public Quiz Update(Quiz updatedQuiz)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            var currentQuiz = _dbContext.Quizzes.Find(updatedQuiz.Id);
+            if (currentQuiz == null) return null;
+
+            _dbContext.Entry(currentQuiz)
+                .CurrentValues
+                .SetValues(updatedQuiz);
+
+            // update the todo and save
+            _dbContext.Quizzes.Update(currentQuiz);
+            _dbContext.SaveChanges();
+            return currentQuiz;
         }
 
-        public Quiz Update(Quiz entity)
+        public void Remove(Quiz removeQuiz)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            _dbContext.Quizzes.Remove(removeQuiz);
+            _dbContext.SaveChanges();
+
         }
+
+
+
     }
 }
